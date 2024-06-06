@@ -1,6 +1,8 @@
 import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue'
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 import plugin from '@vitejs/plugin-vue';
 import fs from 'fs';
 import path from 'path';
@@ -35,7 +37,17 @@ const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_H
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [plugin()],
+    plugins: [
+        vue({
+            template: { transformAssetUrls }
+        }),
+
+        // @quasar/plugin-vite options list:
+        // https://github.com/quasarframework/quasar/blob/dev/vite-plugin/index.d.ts
+        quasar({
+            sassVariables: 'src/quasar-variables.sass'
+        })
+    ],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
