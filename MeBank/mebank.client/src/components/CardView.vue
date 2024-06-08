@@ -1,27 +1,15 @@
 <script setup>
-    import { watch } from 'vue'
-
     const props = defineProps({
-        title: "Null",
-        width: "300"
-    })
-
-    watch(props.width, (value) =>
-        document
-            .documentElement
-            .style
-            .setProperty('--width', value + "px"),
-    {
-        immediate: true
-    })
+        title: "String"
+    });
 </script>   
 
 <template>
     <q-card id="card" 
             class="my-card">
-        <q-card-section>
+        <q-card-section id="cardSelection">
             <div class="text-h5">
-                <div class="text-h5">
+                <div id="titleBox" class="text-h5">
                     {{title}}
                 </div>
             </div>
@@ -34,13 +22,18 @@
 </template>
 
 <style>
-    #card {
-        width: 100%;
-        max-width: var(--width);
+    #cardSelection
+    {
+        padding: 0px;
     }
 
-    #textBlock
+    #titleBox
     {
-        font-size: 14px;
+        text-align: center;
+    }
+
+    #textBlock {
+        padding: 20px;
+        margin: auto;
     }
 </style>

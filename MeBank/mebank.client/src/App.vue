@@ -5,8 +5,7 @@
 </template>
 
 <style>
-    #mainContainer
-    {
-        padding: 10px;
+    #mainContainer {
+        font-size: 16px;
     }
 </style>
