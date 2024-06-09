@@ -12,7 +12,7 @@ namespace MeBank.Server.Controllers
     /// Контроллер для действий клиента.
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
     public class ClientController : ControllerBase
     {

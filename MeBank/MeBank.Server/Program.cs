@@ -30,10 +30,18 @@ namespace MeBank.Server
                 app.UseSwaggerUI();
             }
 
+            app.UseRouting();
+
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
-            app.MapControllers();
             app.MapFallbackToFile("/index.html");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
+
             app.Run();
         }
     }
