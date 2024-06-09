@@ -1,5 +1,3 @@
 <template>
-    <main>
 
-    </main>
 </template>

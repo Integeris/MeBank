@@ -69,7 +69,7 @@
 
 <template>
     <header>
-        <q-card id="menuCard" class="my-card" square flat>
+        <q-card id="menuCard" square flat>
             <q-card-section id="menuCardSelection" horizontal>
                 <homeButton />
                 <q-tabs id="navigationMenu"
@@ -80,12 +80,12 @@
                 </q-tabs>
                 <div class="signContainer">
                     <q-btn class="menuButton"
-                           to="/AppAuthorization"
+                           to="/Authorization"
                            color="primary"
                            label="Sign in"
                            no-caps flat />
                     <q-btn class="menuButton"
-                           to="/AppRegistration"
+                           to="/Registration"
                            color="primary"
                            label="Sign up"
                            no-caps />
@@ -101,7 +101,6 @@
             </div>
         </q-img>
         <q-card id="AboutUs"
-                class="my-card"
                 square flat>
             <q-card-section id="AboutUsBankSelection">
                 <div id="aboutUsBody">
@@ -139,7 +138,7 @@
             </q-card-section>
         </q-card>
         <q-card id="Services"
-                class="my-card"
+               
                 square flat>
             <q-card-section id="servicesSelection">
                 <div class="text-h3">
@@ -155,7 +154,7 @@
             </q-card-section>
         </q-card>
         <q-card id="Reviews"
-                class="my-card"
+               
                 square flat>
             <q-card-section>
                 <div class="text-h3">
@@ -242,6 +241,7 @@
     #reviewsBody {
         display: flex;
         justify-content: space-evenly;
+        grid-gap: 20px;
     }
 
     .signContainer {

@@ -19,7 +19,7 @@
                 {{name}}
                 <q-rating color="primary"
                           size="20px"
-                          :max="5"
+                          :max="'5'"
                           :model-value="rating"
                           readonly />
             </div>
