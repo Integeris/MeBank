@@ -36,8 +36,6 @@
 
             if (!response.ok) {
                 let resText = await response.text();
-                
-                console.log(resText);
 
                 if (resText.trim() === '') {
                     resText = 'None';
@@ -68,7 +66,7 @@
     };
 
     function onReset() {
-        nikname.value = null;
+        login.value = null;
         password.value = null;
         confirm.value = null;
     };
