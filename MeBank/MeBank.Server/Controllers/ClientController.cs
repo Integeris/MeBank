@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 
 namespace MeBank.Server.Controllers
 {
@@ -16,48 +18,59 @@ namespace MeBank.Server.Controllers
     public class ClientController : ControllerBase
     {
         /// <summary>
-        /// Логгер.
-        /// </summary>
-        private readonly ILogger<ClientController> logger;
-
-        /// <summary>
         /// Создание контроллера для действий клиента.
         /// </summary>
-        /// <param name="logger">Логгер.</param>
-        public ClientController(ILogger<ClientController> logger)
-        {
-            this.logger = logger;
-        }
+        public ClientController() { }
 
         /// <summary>
         /// Регистрация новоги клиета.
         /// </summary>
         /// <param name="login">Логин нового клиента.</param>
         /// <param name="password">Пароль нового клиента.</param>
-        /// <returns>Токен пользователя.</returns>
+        /// <returns>Результат регистрации.</returns>
         [HttpPost]
         [Route($"{nameof(Registration)}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Registration(string login, string password)
         {
-            logger.LogInformation("Вошёл в регистрацию.");
-
             try
             {
-                
                 Core.Context.RegistrationClient(login, password);
-                logger.LogTrace("Клиент {login} зарегистрирован.", login);
             }
             catch (Exception ex)
             {
-                string fullMessage = ExceptionLevelDesigner.GetFullException(ex);
-                logger.LogTrace("{fullMessage}", fullMessage);
-                return BadRequest(fullMessage);
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
             }
 
-            logger.LogInformation("Выход из регистрации.");
-            return Ok();
+            return Ok(true);
+        }
+
+        /// <summary>
+        /// Авторизация клиента.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="password">Пароль.</param>
+        /// <returns>Токен.</returns>
+        [HttpGet]
+        [Route($"{nameof(Login)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult Login(string login, string password)
+        {
+            try
+            {
+                if (!Core.Context.ExistUser(login, password))
+                {
+                    throw new Exception("Клиента не существует. Пройдите авторизацию.");
+                }
+
+                return Ok(JWTManager.GetTokenString(JWTManager.GetSecurityToken(login)));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
         }
     }
 }

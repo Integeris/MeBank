@@ -1,6 +1,10 @@
+using MeBank.Server.Classes;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace MeBank.Server
 {
@@ -17,6 +21,11 @@ namespace MeBank.Server
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = JWTManager.TokenValidationParameters;
+            });
+
             var app = builder.Build();
 
             app.UseDefaultFiles();
@@ -30,12 +39,8 @@ namespace MeBank.Server
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.MapFallbackToFile("/index.html");
 
             app.Run();

@@ -4,6 +4,7 @@ using Npgsql;
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace MeBank.Server.Model
 {
@@ -50,8 +51,8 @@ namespace MeBank.Server.Model
             host = "localhost";
             port = 5432;
             database = "MeBank";
-            username = "Client";
-            password = "Client";
+            username = "Server";
+            password = "Server";
 
             this.connection = (NpgsqlConnection)Database.GetDbConnection();
         }
@@ -93,7 +94,7 @@ namespace MeBank.Server.Model
                 },
                 new NpgsqlParameter("@password", DbType.StringFixedLength, 50)
                 {
-                    Value= password
+                    Value = password
                 }
             };
 
@@ -114,6 +115,50 @@ namespace MeBank.Server.Model
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Проверка пользователя на наличие.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="password">Пароль.</param>
+        /// <returns>Существует ли клиент.</returns>
+        public bool ExistUser(string login, string password)
+        {
+            bool clientExist;
+            const string sqlText = "SELECT \"ExistClient\"(@login, @password);";
+
+            NpgsqlParameter[] parameters =
+            {
+                new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
+                {
+                    Value = login
+                },
+                new NpgsqlParameter("@password", DbType.StringFixedLength, 50)
+                {
+                    Value = password
+                }
+            };
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlText, connection))
+                {
+                    try
+                    {
+                        command.Parameters.AddRange(parameters);
+                        clientExist = (bool)command.ExecuteScalar();
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Commit();
+                        throw new Exception($"Ошибка при добавлении клиента. Запрос: {command.CommandText}.", ex);
+                    }
+                }
+            }
+
+            return clientExist;
         }
 
         /// <summary>

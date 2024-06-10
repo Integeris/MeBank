@@ -23,9 +23,6 @@
                 "password": password.value
             });
 
-            console.log(login)
-            console.log(data.toString())
-
             let response = await fetch('api/Client/Registration?' + data.toString(),
             {
                 method: 'POST',
@@ -48,10 +45,10 @@
                 color: 'green-4',
                 textColor: 'white',
                 icon: 'cloud_done',
-                message: 'Registrated!!!'
+                message: 'You Registrated!'
             });
 
-            router.push("/");
+            router.push("/AppAuthorization");
         }
         catch (err) {
             $q.notify({
