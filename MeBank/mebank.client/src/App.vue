@@ -6,6 +6,7 @@
 
 <style>
     #mainContainer {
+        width: 100vw;
         font-size: 16px;
     }
 </style>

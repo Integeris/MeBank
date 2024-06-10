@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
-using System.Text.RegularExpressions;
 
 namespace MeBank.Server.Controllers
 {
@@ -16,11 +15,6 @@ namespace MeBank.Server.Controllers
     [Produces(MediaTypeNames.Application.Json)]
     public class ClientController : ControllerBase
     {
-        /// <summary>
-        /// Регулярное выражение для проверки логина и пароля.
-        /// </summary>
-        private readonly static string regexString = @"^[A-Za-z\d_\!\*]{5,50}$";
-
         /// <summary>
         /// Логгер.
         /// </summary>
@@ -42,24 +36,16 @@ namespace MeBank.Server.Controllers
         /// <param name="password">Пароль нового клиента.</param>
         /// <returns>Токен пользователя.</returns>
         [HttpPost]
-        [Route($"{nameof(RegistrationClient)}")]
+        [Route($"{nameof(Registration)}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult RegistrationClient(string login, string password)
+        public IActionResult Registration(string login, string password)
         {
-            logger.LogInformation("Вошёл в регистрацию");
+            logger.LogInformation("Вошёл в регистрацию.");
 
             try
             {
-                if (!Regex.IsMatch(login, regexString))
-                {
-                    throw new ArgumentException($"Логин должен подходить выражению {regexString}.", nameof(login));
-                }
-                else if (!Regex.IsMatch(password, regexString))
-                {
-                    throw new ArgumentException($"Пароль должен подходить выражению {regexString}.", nameof(password));
-                }
-
+                
                 Core.Context.RegistrationClient(login, password);
                 logger.LogTrace("Клиент {login} зарегистрирован.", login);
             }
@@ -70,6 +56,7 @@ namespace MeBank.Server.Controllers
                 return BadRequest(fullMessage);
             }
 
+            logger.LogInformation("Выход из регистрации.");
             return Ok();
         }
     }

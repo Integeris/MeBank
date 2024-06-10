@@ -3,9 +3,10 @@
     import { ref } from 'vue';
     import { useRouter } from 'vue-router';
 
+    const $q = useQuasar();
     const router = useRouter();
 
-    const nikname = ref(null);
+    const login = ref(null);
     const password = ref(null);
     const confirm = ref(null);
     const re = new RegExp("^[0-9A-Za-z\_\*\!]{5,50}$");
@@ -14,8 +15,56 @@
         router.go(-1);
     }
 
-    function onSubmit() {
-        router.push("/")
+    async function onSubmit() {
+        try {
+            const data = new URLSearchParams(
+            {
+                "login": login.value,
+                "password": password.value
+            });
+
+            console.log(login)
+            console.log(data.toString())
+
+            let response = await fetch('api/Client/Registration?' + data.toString(),
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                let resText = await response.text();
+                
+                console.log(resText);
+
+                if (resText.trim() === '') {
+                    resText = 'None';
+                }
+
+                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${resText}`);
+            }
+
+            $q.notify({
+                color: 'green-4',
+                textColor: 'white',
+                icon: 'cloud_done',
+                message: 'Registrated!!!'
+            });
+
+            router.push("/");
+        }
+        catch (err) {
+            $q.notify({
+                color: 'red',
+                textColor: 'white',
+                icon: 'warning',
+                message: err.message
+            });
+
+            console.error(err);
+        }
     };
 
     function onReset() {
@@ -40,14 +89,14 @@
             </q-card-section>
             <q-separator />
             <q-card-section>
-                <q-form @submit="onSubmit"
+                <q-form id="mainForm"  
+                        @submit="onSubmit"
                         @reset="onReset">
                     <q-input class="inputFild" 
                              filled
-                             v-model="nikname"
-                             label="You nikname"
-                             lazy-rules
-                             :rules="[ value => re.test(value) || 'The nikname must be Latin letters or numbers from 5 to 50 characters.']" />
+                             v-model="login"
+                             label="You login"
+                             :rules="[ value => re.test(value) || 'The login must be Latin letters or numbers from 5 to 50 characters.']" />
                     <q-input class="inputFild" 
                              type="password"
                              filled

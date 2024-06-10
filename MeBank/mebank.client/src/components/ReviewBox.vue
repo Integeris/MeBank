@@ -9,7 +9,7 @@
 </script>
 
 <template>
-    <q-card id="Reviews"
+    <q-card id="Review"
             class="my-card">
         <q-card-section>
             <div class="text-h5">
@@ -18,7 +18,6 @@
                 </q-avatar>
                 {{name}}
                 <q-rating color="primary"
-                          size="20px"
                           :max="'5'"
                           :model-value="rating"
                           readonly />
@@ -32,6 +31,10 @@
 </template>
 
 <style>
+    #Review
+    {
+        max-width: 500px;
+    }
     #textBox
     {
         text-align: justify;

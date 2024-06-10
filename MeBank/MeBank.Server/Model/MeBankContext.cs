@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using System;
 using System.Data;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace MeBank.Server.Model
 {
@@ -64,7 +64,27 @@ namespace MeBank.Server.Model
         /// <exception cref="Exception"></exception>
         public void RegistrationClient(string login, string password)
         {
+            const string regexString = @"^[A-Za-z\d_\!\*]{5,50}$";
+
+            if (login == null)
+            {
+                throw new ArgumentException($"Логин не может быть пустым.", nameof(login));
+            }
+            else if (password == null)
+            {
+                throw new ArgumentException($"Пароль не может быть пустым.", nameof(password));
+            }
+            else if (!Regex.IsMatch(login, regexString))
+            {
+                throw new ArgumentException($"Логин должен подходить выражению {regexString}.", nameof(login));
+            }
+            else if (!Regex.IsMatch(password, regexString))
+            {
+                throw new ArgumentException($"Пароль должен подходить выражению {regexString}.", nameof(password));
+            }
+
             const string sqlText = "CALL \"CreateClient\" (@login, @password)";
+
             NpgsqlParameter[] parameters =
             {
                 new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
