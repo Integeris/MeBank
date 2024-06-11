@@ -54,7 +54,7 @@ namespace MeBank.Server.Controllers
         /// <returns>Токен.</returns>
         [HttpGet]
         [Route($"{nameof(Login)}")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Login(string login, string password)
         {
@@ -66,6 +66,29 @@ namespace MeBank.Server.Controllers
                 }
 
                 return Ok(JWTManager.GetTokenString(JWTManager.GetSecurityToken(login)));
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        [HttpGet]
+        [Route($"{nameof(ValidateToken)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult ValidateToken(string login, string token)
+        {
+            try
+            {
+                JWTManager.AssertValidateToken(login, token);
+
+                if (!Core.Context.ExistUser(login))
+                {
+                    throw new ArgumentException($"Указанного пользователя ({login}) не сущесвует.", nameof(login));
+                }
+
+                return Ok();
             }
             catch (Exception ex)
             {

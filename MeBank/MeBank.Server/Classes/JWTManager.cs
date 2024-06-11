@@ -166,5 +166,30 @@ namespace MeBank.Server.Classes
         {
             return tokenHandler.WriteToken(token);
         }
+
+        /// <summary>
+        /// Проверяет токен на правильность.
+        /// </summary>
+        /// <param name="login">Логин пользователя.</param>
+        /// <param name="token">Токен.</param>
+        public static void AssertValidateToken(string login, string token)
+        {
+            try
+            {
+                SecurityToken securityToken;
+                ClaimsPrincipal claims = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+
+                string tokenLogin = claims.FindFirst(ClaimTypes.Name).Value;
+
+                if (login == tokenLogin && securityToken != null)
+                {
+                    throw new ArgumentException("Логин в переданном токене и переданный логин не совпадают", nameof(login));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("Неверный токен.", nameof(token), ex);
+            }
+        }
     }
 }

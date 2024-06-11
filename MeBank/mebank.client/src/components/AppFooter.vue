@@ -2,7 +2,7 @@
     <footer>
         <div class="informationContainer">
             <div>
-                <div class="header">
+                <div class="footerHeader">
                     Contact us:
                 </div>
                 Email: support@mebank.com
@@ -10,7 +10,7 @@
                 Tel: 8-800-555-55-55
             </div>
             <div>
-                <div class="header">
+                <div class="footerHeader">
                     Legal information:
                 </div>
                 Privacy Policy
@@ -18,7 +18,7 @@
                 Personal data processing agreement
             </div>
             <div>
-                <div class="header">
+                <div class="footerHeader">
                     Social Networks:
                 </div>
                 Twitter
@@ -36,7 +36,7 @@
         color: #333333;
     }
 
-    .header
+    .footerHeader
     {
         font-size: 20px;
     }

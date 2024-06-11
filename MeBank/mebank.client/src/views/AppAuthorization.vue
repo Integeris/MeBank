@@ -73,10 +73,10 @@
 </script>
 
 <template>
-    <div id="mainContainer">
+    <div id="authorizationContainer">
         <q-card id="mainCard" flat bordered>
             <q-card-section>
-                <div id="hederContainer">
+                <div id="headerAuthorizationContainer">
                     <q-btn label="Back"
                            type="reset"
                            color="primary"
@@ -87,7 +87,7 @@
             </q-card-section>
             <q-separator />
             <q-card-section>
-                <q-form id="mainForm"
+                <q-form id="authorizationForm"
                         @submit="onSubmit"
                         @reset="onReset">
                     <q-input class="inputFild"
@@ -118,14 +118,14 @@
 </template>
 
 <style>
-    #mainContainer {
+    #authorizationContainer {
         width: 100vw;
         height: 100vh;
         display: table-cell;
         vertical-align: middle;
     }
 
-    #hederContainer {
+    #headerAuthorizationContainer {
         display: flex;
         justify-content: space-between;
     }

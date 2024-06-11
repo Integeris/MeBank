@@ -23,7 +23,7 @@
                           readonly />
             </div>
             <q-separator />
-            <div id="textBox">
+            <div id="reviewTextBox">
                 <slot />
             </div>
         </q-card-section>
@@ -35,7 +35,7 @@
     {
         max-width: 500px;
     }
-    #textBox
+    #reviewTextBox
     {
         text-align: justify;
     }

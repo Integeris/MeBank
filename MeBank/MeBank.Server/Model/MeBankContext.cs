@@ -4,7 +4,6 @@ using Npgsql;
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
-using System.Xml;
 
 namespace MeBank.Server.Model
 {
@@ -123,8 +122,10 @@ namespace MeBank.Server.Model
         /// <param name="login">Логин.</param>
         /// <param name="password">Пароль.</param>
         /// <returns>Существует ли клиент.</returns>
-        public bool ExistUser(string login, string password)
+        public bool ExistUser(string login, string password = null)
         {
+            // TODO: Изменить функцию или добавить другую чтобы при password = null проверка шла только на логин.
+
             bool clientExist;
             const string sqlText = "SELECT \"ExistClient\"(@login, @password);";
 

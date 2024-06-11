@@ -70,10 +70,10 @@
 </script>
 
 <template>
-    <div id="mainContainer">
+    <div id="registrationContainer">
         <q-card id="mainCard" flat bordered>
             <q-card-section>
-                <div id="hederContainer">
+                <div id="headRegistrationContainer">
                     <q-btn label="Back"
                            type="reset"
                            color="primary"
@@ -84,7 +84,7 @@
             </q-card-section>
             <q-separator />
             <q-card-section>
-                <q-form id="mainForm"  
+                <q-form id="registrationForm"  
                         @submit="onSubmit"
                         @reset="onReset">
                     <q-input class="inputFild" 
@@ -121,7 +121,7 @@
 </template>
 
 <style>
-    #mainContainer
+    #registrationContainer
     {
         width: 100vw;
         height: 100vh;
@@ -129,7 +129,7 @@
         vertical-align: middle;
     }
 
-    #hederContainer
+    #headRegistrationContainer
     {
         display: flex;
         justify-content: space-between;

@@ -1,6 +1,6 @@
 <script setup>
     import { ref } from 'vue'
-    import homeButton from '@/components/MenuHomeButton.vue';
+    import HeaderMenu from '@/components/HeaderMenu.vue';
     import CardView from '@/components/CardView.vue'
     import ReviewBox from "@/components/ReviewBox.vue"
     import AppFooter from "@/components/AppFooter.vue"
@@ -68,31 +68,26 @@
 </script>
 
 <template>
-    <header>
-        <q-card id="menuCard" square flat>
-            <q-card-section id="menuCardSelection" horizontal>
-                <homeButton />
-                <q-tabs id="navigationMenu"
-                        class="text-primary">
-                    <q-route-tab v-for="item in navigationSectionItems"
-                                 :href="'#' + item.name"
-                                 :label="item.label" />
-                </q-tabs>
-                <div class="signContainer">
-                    <q-btn class="menuButton"
-                           to="/Authorization"
-                           color="primary"
-                           label="Sign in"
-                           no-caps flat />
-                    <q-btn class="menuButton"
-                           to="/Registration"
-                           color="primary"
-                           label="Sign up"
-                           no-caps />
-                </div>
-            </q-card-section>
-        </q-card>
-    </header>
+    <HeaderMenu>
+        <q-tabs id="navigationMenu"
+                class="text-primary">
+            <q-route-tab v-for="item in navigationSectionItems"
+                         :href="'#' + item.name"
+                         :label="item.label" />
+        </q-tabs>
+        <div class="signContainer">
+            <q-btn class="menuButton"
+                   to="/Authorization"
+                   color="primary"
+                   label="Sign in"
+                   no-caps flat />
+            <q-btn class="menuButton"
+                   to="/Registration"
+                   color="primary"
+                   label="Sign up"
+                   no-caps />
+        </div>
+    </HeaderMenu>
     <main>
         <q-img id="startImage"
                src="../assets/images/BankPrevew.jpg">
@@ -103,12 +98,12 @@
         <q-card id="AboutUs"
                 square flat>
             <q-card-section id="AboutUsBankSelection">
+                <div class="text-h3">
+                    About Us
+                    <q-separator />
+                </div>
                 <div id="aboutUsBody">
                     <div id="textBlock">
-                        <div class="text-h3">
-                            About Us
-                            <q-separator />
-                        </div>
                         <p>
                             We are a startup bank created to revolutionize the banking system. Our mission is to provide innovative and convenient banking solutions
                             for individuals and businesses. We focus on security, comfort and personalized service to help customers take control of their finances.
@@ -138,11 +133,12 @@
             </q-card-section>
         </q-card>
         <q-card id="Services"
-               
+
                 square flat>
             <q-card-section id="servicesSelection">
                 <div class="text-h3">
                     Services
+                    <q-separator />
                 </div>
                 <div id="servicesBody">
                     <CardView class="servicesCard"
@@ -154,11 +150,12 @@
             </q-card-section>
         </q-card>
         <q-card id="Reviews"
-               
+
                 square flat>
             <q-card-section>
                 <div class="text-h3">
                     Reviews
+                    <q-separator />
                 </div>
                 <div id="reviewsBody">
                     <ReviewBox class="reviewsCard"
@@ -180,23 +177,20 @@
         margin-bottom: 10px;
     }
 
-    #menuCardSelection {
-        padding: 0px;
-        height: 55px;
-        align-items: center;
-    }
-
     #startImage
     {
         height: 500px;
     }
 
     #AboutUs {
-        margin: 15px 100px 15px 0px;
+        margin: 15px 100px 0px 0px;
     }
 
-    #aboutUsBody
-    {
+    #AboutUsBankSelection {
+        padding: 16px 16px 0px 16px;
+    }
+
+    #aboutUsBody {
         display: flex;
         font-size: 16px;
     }
@@ -218,8 +212,8 @@
     }
 
     #aboutUsUsEmployeeAvatar {
-        width: 250px;
-        height: 250px;
+        width: 230px;
+        height: 230px;
     }
 
     #servicesSelection {
@@ -249,7 +243,7 @@
     }
 
     .signContainer {
-        margin-left: auto;
+        margin: auto 5px auto auto;
     }
 
     .menuButton {

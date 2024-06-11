@@ -5,8 +5,7 @@
 </script>   
 
 <template>
-    <q-card id="card" 
-            class="my-card">
+    <q-card class="my-card">
         <q-card-section id="cardSelection">
             <div class="text-h5">
                 <div id="titleBox" class="text-h5">
