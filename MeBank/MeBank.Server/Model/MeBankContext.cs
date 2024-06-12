@@ -2,7 +2,10 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MeBank.Server.Model
@@ -105,12 +108,14 @@ namespace MeBank.Server.Model
                     {
                         command.Parameters.AddRange(parameters);
                         command.ExecuteNonQuery();
-                        transaction.Commit();
                     }
                     catch (Exception ex)
                     {
-                        transaction.Commit();
                         throw new Exception($"Ошибка при добавлении клиента. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
                     }
                 }
             }
@@ -124,20 +129,70 @@ namespace MeBank.Server.Model
         /// <returns>Существует ли клиент.</returns>
         public bool ExistUser(string login, string password = null)
         {
-            // TODO: Изменить функцию или добавить другую чтобы при password = null проверка шла только на логин.
-
             bool clientExist;
-            const string sqlText = "SELECT \"ExistClient\"(@login, @password);";
+
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append("SELECT \"ExistClient\"(@login");
+
+            List<NpgsqlParameter> parameters = new List<NpgsqlParameter>()
+            {
+                new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
+                {
+                    Value = login
+                }
+            };
+
+            if (password != null)
+            {
+                sqlBuilder.Append(", @password");
+                parameters.Add(new NpgsqlParameter("@password", DbType.StringFixedLength, 50)
+                {
+                    Value = password
+                });
+            }
+
+            sqlBuilder.Append(");");
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlBuilder.ToString(), connection))
+                {
+                    try
+                    {
+                        command.Parameters.AddRange(parameters.ToArray());
+                        clientExist = (bool)command.ExecuteScalar();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка при проверке существования клиента. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
+                    }
+                }
+            }
+
+            return clientExist;
+        }
+
+        /// <summary>
+        /// Пучение всех банковских счетов клиента.
+        /// </summary>
+        /// <param name="login">Идентификатор клиента.</param>
+        /// <returns>Банковские счета клиента.</returns>
+        /// <exception cref="Exception"></exception>
+        public IEnumerable<BankAccount> GetBankAccounts(string login)
+        {
+            List<BankAccount> accounts = new List<BankAccount>();
+
+            const string sqlText = "SELECT * FROM \"GetUserBankAccounts\" (@login)";
 
             NpgsqlParameter[] parameters =
             {
                 new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
                 {
                     Value = login
-                },
-                new NpgsqlParameter("@password", DbType.StringFixedLength, 50)
-                {
-                    Value = password
                 }
             };
 
@@ -148,18 +203,36 @@ namespace MeBank.Server.Model
                     try
                     {
                         command.Parameters.AddRange(parameters);
-                        clientExist = (bool)command.ExecuteScalar();
-                        transaction.Commit();
+
+                        using (NpgsqlDataReader reader = command.ExecuteReader())
+                        {
+                            PropertyInfo[] properties = typeof(BankAccount).GetProperties();
+
+                            while (reader.Read())
+                            {
+                                BankAccount bankAccount = new BankAccount();
+
+                                foreach (PropertyInfo propertyInfo in properties)
+                                {
+                                    propertyInfo.SetValue(bankAccount, Convert.ChangeType(reader.GetValue(propertyInfo.Name), propertyInfo.PropertyType));
+                                }
+
+                                accounts.Add(bankAccount);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
+                        throw new Exception($"Ошибка при получении банковских аккаунтов клиента. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
                         transaction.Commit();
-                        throw new Exception($"Ошибка при добавлении клиента. Запрос: {command.CommandText}.", ex);
                     }
                 }
             }
 
-            return clientExist;
+            return accounts;
         }
 
         /// <summary>

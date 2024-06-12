@@ -181,7 +181,7 @@ namespace MeBank.Server.Classes
 
                 string tokenLogin = claims.FindFirst(ClaimTypes.Name).Value;
 
-                if (login == tokenLogin && securityToken != null)
+                if (login != tokenLogin)
                 {
                     throw new ArgumentException("Логин в переданном токене и переданный логин не совпадают", nameof(login));
                 }

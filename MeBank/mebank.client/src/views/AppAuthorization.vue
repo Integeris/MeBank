@@ -25,25 +25,22 @@
 
             // Создать запрос на авторизацию.
 
-            //let response = await fetch('api/Client/Registration?' + data.toString(),
-            //    {
-            //        method: 'POST',
-            //        headers: {
-            //            'Content-Type': 'application/json'
-            //        }
-            //    });
+            let response = await fetch('api/Client/Login?' + data.toString(),
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+            let result = await response.json();
 
             if (!response.ok) {
-                let resText = await response.text();
-
-                console.log(resText);
-
-                if (resText.trim() === '') {
-                    resText = 'None';
-                }
-
-                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${resText}`);
+                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
             }
+
+            sessionStorage.setItem("login", login.value);
+            sessionStorage.setItem("token", result);
 
             $q.notify({
                 color: 'green-4',
@@ -62,6 +59,8 @@
                 message: err.message
             });
 
+            sessionStorage.removeItem("login");
+            sessionStorage.removeItem("token");
             console.error(err);
         }
     };

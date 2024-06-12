@@ -1,8 +1,8 @@
 <script setup>
     const props = defineProps({
-        name: "String",
-        avatarSrc: "String",
-        rating: "String"
+        name: String,
+        avatarSrc: String,
+        rating: Number
     });
 
     const srcURL = new URL(props.avatarSrc, import.meta.url).pathname;
@@ -18,8 +18,7 @@
                 </q-avatar>
                 {{name}}
                 <q-rating color="primary"
-                          :max="'5'"
-                          :model-value="rating"
+                          :modelValue="rating"
                           readonly />
             </div>
             <q-separator />

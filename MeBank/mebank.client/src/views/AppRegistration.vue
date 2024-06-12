@@ -32,13 +32,13 @@
             });
 
             if (!response.ok) {
-                let resText = await response.text();
+                let result = await response.json();
+                console.log(result);
+                //if (resText.trim() === '') {
+                //    resText = 'None';
+                //}
 
-                if (resText.trim() === '') {
-                    resText = 'None';
-                }
-
-                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${resText}`);
+                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
             }
 
             $q.notify({
@@ -48,7 +48,7 @@
                 message: 'You Registrated!'
             });
 
-            router.push("/AppAuthorization");
+            router.push("/Authorization");
         }
         catch (err) {
             $q.notify({

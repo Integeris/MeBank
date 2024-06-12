@@ -39,7 +39,7 @@
         {
             name: "Gabriel Green",
             avatarSrc: "../assets/images/ReviewAvatar1.jpg",
-            rating: "5",
+            rating: 5,
             text: `My dealings with the bank have been extremely positive. The bank staff was courteous, attentive and professional.
             They answered my questions in detail and assisted in processing transactions. I was also pleased that the bank
             offers convenient card terms including grace period and freebies. Overall, I recommend this bank to anyone looking
@@ -48,7 +48,7 @@
         {
             name: "Emily Thompson",
             avatarSrc: "../assets/images/ReviewAvatar2.jpg",
-            rating: "4",
+            rating: 4,
             text: `In my experience with banking institutions, this bank stands out for its efficient organization and high 
             level of service. The bank's staff demonstrates excellent financial skills and knowledge, enabling them to effectively assist 
             customers in achieving their financial goals. I was also impressed with the wide range of financial products and services the bank 
@@ -58,7 +58,7 @@
         {
             name: "Michael Johnson",
            avatarSrc: "../assets/images/ReviewAvatar3.jpg",
-            rating: "5",
+            rating: 5,
             text: `My company needed additional resources to expand production and the bank offered us excellent terms for a loan. 
             The bank staff was courteous and professional, helping me with the loan application and answering my questions. 
             I was pleased that the bank offered the best terms and flexible repayment options. Overall, I recommend this bank 
@@ -97,7 +97,7 @@
         </q-img>
         <q-card id="AboutUs"
                 square flat>
-            <q-card-section id="AboutUsBankSelection">
+            <q-card-section id="AboutUsSelection">
                 <div class="text-h3">
                     About Us
                     <q-separator />
@@ -183,10 +183,10 @@
     }
 
     #AboutUs {
-        margin: 15px 100px 0px 0px;
+        margin: 15px 50px 0px 0px;
     }
 
-    #AboutUsBankSelection {
+    #AboutUsSelection {
         padding: 16px 16px 0px 16px;
     }
 

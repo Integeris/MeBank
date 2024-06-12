@@ -73,6 +73,12 @@ namespace MeBank.Server.Controllers
             }
         }
 
+        /// <summary>
+        /// Проверка токена на правильность.
+        /// </summary>
+        /// <param name="login">Логин пользователя.</param>
+        /// <param name="token">Токен.</param>
+        /// <returns>Правильны ли токен.</returns>
         [HttpGet]
         [Route($"{nameof(ValidateToken)}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,18 +87,51 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                JWTManager.AssertValidateToken(login, token);
-
-                if (!Core.Context.ExistUser(login))
-                {
-                    throw new ArgumentException($"Указанного пользователя ({login}) не сущесвует.", nameof(login));
-                }
+                AssertValidateToken(login, token);
 
                 return Ok();
             }
             catch (Exception ex)
             {
                 return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
+        /// Получение всех банковских аккаунтов клиента.
+        /// </summary>
+        /// <param name="login">Логин клиента.</param>
+        /// <param name="token">Токен.</param>
+        /// <returns>Банковские аккаунты клиента.</returns>
+        [HttpGet]
+        [Route($"{nameof(GetBankAccounts)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetBankAccounts(string login, string token)
+        {
+            try
+            {
+                AssertValidateToken(login, token);
+                return Ok(Core.Context.GetBankAccounts(login));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
+        /// Проверка токена на правильность (Если не верный, то возврат ошибки).
+        /// </summary>
+        /// <param name="login">Логин пользователя.</param>
+        /// <param name="token">Токен.</param>
+        private static void AssertValidateToken(string login, string token)
+        {
+            JWTManager.AssertValidateToken(login, token);
+
+            if (!Core.Context.ExistUser(login))
+            {
+                throw new ArgumentException($"Указанного пользователя ({login}) не сущесвует.", nameof(login));
             }
         }
     }
