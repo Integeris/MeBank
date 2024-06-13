@@ -54,7 +54,7 @@
 </script>
 
 <template>
-    <!--<Dashboard/>-->
-    <Dashboard v-if="login != undefined"/>
-    <Welcome v-if="login == undefined"/>
+    <Dashboard/>
+    <!--<Dashboard v-if="login != undefined"/>
+    <Welcome v-if="login == undefined"/>-->
 </template>

@@ -2,7 +2,9 @@
   "dependencies": {
     "@quasar/extras": "^1.16.11",
     "@vueuse/core": "^10.11.0",
+    "apexcharts": "^3.49.1",
     "quasar": "^2.16.4",
+    "vue-apexcharts": "^1.6.2",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@
     import { useStorage } from "@vueuse/core"
     import AppFooter from "@/components/AppFooter.vue";
     import HeaderMenu from "@/components/HeaderMenu.vue";
+    import VueApexCharts from 'vue-apexcharts'
     import { useRouter } from 'vue-router';
     import { ref } from 'vue'
 
@@ -15,6 +16,74 @@
     ];
 
     const currentBankAccount = ref(bankAccounts[0]);
+
+    const entryColumns = [
+        {
+            name: 'IdBankAccount',
+            required: true,
+            label: 'Bank account',
+            align: 'center',
+            field: row => row.IdBankAccount,
+            format: val => `${val}`,
+            sortable: true
+        },
+        {
+            name: 'Balance',
+            required: true,
+            label: 'Balance',
+            align: 'center',
+            field: row => row.Balance,
+            format: val => `${val}`,
+            sortable: true
+        },
+        {
+            name: 'CurrencyTitle',
+            required: true,
+            label: 'Currency',
+            align: 'center',
+            field: row => row.CurrencyTitle,
+            format: val => `${val}`,
+            sortable: true
+        }
+    ];
+
+    const entries = [
+        {
+            IdBankAccount: 1,
+            Balance: 100,
+            CurrencyTitle: "RUB"
+        }
+    ];
+
+    const chartSeries = [
+        {
+            name: "Payment",
+            data: [{ x: '05/06/2014', y: 54 }, { x: '05/08/2014', y: 17 }, { x: '05/28/2014', y: 26 }]
+        },
+        {
+            name: "GetPayment",
+            data: [{ x: '05/06/2014', y: 20 }, { x: '05/08/2014', y: 40 }, { x: '05/28/2014', y: 26 }]
+        }
+    ]
+
+    const chartOptions = {
+        chart: {
+            type: "bar",
+            stacked: true
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                endingShape: "rounded"
+            }
+        },
+        dataLabels: {
+            enable: false
+        },
+        xaxis: {
+            type: 'datetime'
+        }
+    }
 
     function onClick()
     {
@@ -43,16 +112,22 @@
                           v-model="currentBankAccount"
                           :options="bankAccounts"
                           label="Bank account" />
-                <div>
-                    Balance
+                <div id="balanceTextBox">
+                    Balance: 31231
                 </div>
                 <div>
-                    Currency
+                    Currency: RUB
                 </div>
             </div>
-            <div id="paymentStory">
-                Table of Transfers
+            <div id="entriesContainer">
+                <q-table title="Entries"
+                         :rows="entries"
+                         :columns="entryColumns"
+                         row-key="IdBankAccount" />
             </div>
+        </div>
+        <div>
+            <apexchart :options="chartOptions" :series="chartSeries"></apexchart>
         </div>
     </main>
     <AppFooter/>
@@ -77,17 +152,23 @@
         vertical-align: middle;
     }
 
-    #accountsContainer
-    {
-
+    #accountsContainer {
+        display: flex;
     }
 
     #accountData {
+        margin: 10px 10px 10px 10px;
         display: inline-block;
         width: 50%;
     }
 
-    #paymentStory {
+    #balanceTextBox
+    {
+        font-size: 45px;
+    }
+
+    #entriesContainer {
+        margin: 10px 10px 10px 10px;
         display: inline-block;
         width: 50%;
     }
