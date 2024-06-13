@@ -5,7 +5,8 @@
     "apexcharts": "^3.49.1",
     "quasar": "^2.16.4",
     "vue-apexcharts": "^1.6.2",
-    "vue-router": "^4.3.2"
+    "vue-router": "^4.3.2",
+    "vue3-apexcharts": "^1.5.3"
   },
   "devDependencies": {
     "@quasar/vite-plugin": "^1.7.0",

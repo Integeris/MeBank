@@ -88,7 +88,6 @@ namespace MeBank.Server.Controllers
             try
             {
                 AssertValidateToken(login, token);
-
                 return Ok();
             }
             catch (Exception ex)
@@ -113,6 +112,30 @@ namespace MeBank.Server.Controllers
             {
                 AssertValidateToken(login, token);
                 return Ok(Core.Context.GetBankAccounts(login));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
+        /// Получение транзакий банковского счёта.
+        /// </summary>
+        /// <param name="idBankAccount">Идентификатор банковского счёта.</param>
+        /// <param name="login">Логин.</param>
+        /// <param name="token">Токен.</param>
+        /// <returns>Транзакции банковского счёта.</returns>
+        [HttpGet]
+        [Route($"{nameof(GetGetBankAccountEntries)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetGetBankAccountEntries(int idBankAccount, string login, string token)
+        {
+            try
+            {
+                AssertValidateToken(login, token);
+                return Ok(Core.Context.GetGetBankAccountEntries(idBankAccount));
             }
             catch (Exception ex)
             {

@@ -177,7 +177,7 @@ namespace MeBank.Server.Model
         }
 
         /// <summary>
-        /// Пучение всех банковских счетов клиента.
+        /// Получение всех банковских счетов клиента.
         /// </summary>
         /// <param name="login">Идентификатор клиента.</param>
         /// <returns>Банковские счета клиента.</returns>
@@ -233,6 +233,65 @@ namespace MeBank.Server.Model
             }
 
             return accounts;
+        }
+
+        /// <summary>
+        /// Получение транзакий банковского счёта.
+        /// </summary>
+        /// <param name="idBankAccount">Идентификатор банковского счёта.</param>
+        /// <returns>Транзакции банковского счёта.</returns>
+        /// <exception cref="Exception"></exception>
+        public IEnumerable<Entry> GetGetBankAccountEntries(int idBankAccount)
+        {
+            List<Entry> entries = new List<Entry>();
+
+            const string sqlText = "SELECT * FROM \"GetBankAccountEntries\" (@idBankAccount)";
+
+            NpgsqlParameter[] parameters =
+            {
+                new NpgsqlParameter("@idBankAccount", DbType.Int32)
+                {
+                    Value = idBankAccount
+                }
+            };
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlText, connection))
+                {
+                    try
+                    {
+                        command.Parameters.AddRange(parameters);
+
+                        using (NpgsqlDataReader reader = command.ExecuteReader())
+                        {
+                            PropertyInfo[] properties = typeof(BankAccount).GetProperties();
+
+                            while (reader.Read())
+                            {
+                                Entry entry = new Entry();
+
+                                foreach (PropertyInfo propertyInfo in properties)
+                                {
+                                    propertyInfo.SetValue(entry, Convert.ChangeType(reader.GetValue(propertyInfo.Name), propertyInfo.PropertyType));
+                                }
+
+                                entries.Add(entry);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка при получении транзакций банковского счёта клиента. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
+                    }
+                }
+            }
+
+            return entries;
         }
 
         /// <summary>

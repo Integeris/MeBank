@@ -4,18 +4,21 @@
     import HeaderMenu from "@/components/HeaderMenu.vue";
     import VueApexCharts from 'vue-apexcharts'
     import { useRouter } from 'vue-router';
-    import { ref } from 'vue'
+    import { ref, reactive } from 'vue'
 
     const login = useStorage('login', undefined, sessionStorage);
     const token = useStorage('token', undefined, sessionStorage);
 
-    let bankAccounts = [
-        "1231",
-        "1231",
-        "1231dfs"
-    ];
+    let bankAccounts;
+    let currentBankAccount;
 
-    const currentBankAccount = ref(bankAccounts[0]);
+    GetBankAccounts(login.value, token.value);
+
+    //let bankAccounts = [
+    //    "1231",
+    //    "1231",
+    //    "1231dfs"
+    //];
 
     const entryColumns = [
         {
@@ -28,32 +31,34 @@
             sortable: true
         },
         {
-            name: 'Balance',
+            name: 'Amount',
             required: true,
-            label: 'Balance',
+            label: 'Amount',
             align: 'center',
-            field: row => row.Balance,
+            field: row => row.Amount,
             format: val => `${val}`,
             sortable: true
         },
         {
-            name: 'CurrencyTitle',
+            name: 'Date',
             required: true,
-            label: 'Currency',
+            label: 'Date',
             align: 'center',
-            field: row => row.CurrencyTitle,
+            field: row => row.Date,
             format: val => `${val}`,
             sortable: true
         }
     ];
 
-    const entries = [
-        {
-            IdBankAccount: 1,
-            Balance: 100,
-            CurrencyTitle: "RUB"
-        }
-    ];
+    let entries = ref([]);
+
+    //let entries = [
+    //    {
+    //        IdBankAccount: 1,
+    //        Balance: 100,
+    //        CurrencyTitle: "RUB"
+    //    }
+    //];
 
     const chartSeries = [
         {
@@ -85,6 +90,70 @@
         }
     }
 
+    async function GetBankAccounts(login, token)
+    {
+        const data = new URLSearchParams(
+        {
+            "login": login,
+            "token": token
+        });
+
+        try {
+            let response = await fetch('api/Client/GetBankAccounts?' + data.toString(),
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            let result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
+            }
+
+            bankAccounts = ref(result);
+            currentBankAccount = ref(bankAccounts.value[0]);
+
+            await GetGetBankAccountEntries(currentBankAccount.value.idBankAccount, login, token);
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function GetGetBankAccountEntries(idBankAccount, login, token)
+    {
+        const data = new URLSearchParams(
+        {
+            "idBankAccount": idBankAccount,
+
+            "login": login,
+            "token": token
+        });
+
+        try {
+            let response = await fetch('api/Client/GetGetBankAccountEntries?' + data.toString(),
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            let result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
+            }
+
+            entries = ref(result);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     function onClick()
     {
         login.value = null;
@@ -100,7 +169,7 @@
                     Login: {{login}}
                 </div>
             </div>
-            <q-btn @click="onClick" 
+            <q-btn @click="onClick()" 
                    color="primary" 
                    label="Sign out" />
         </div>
@@ -109,7 +178,7 @@
         <div id="accountsContainer">
             <div id="accountData">
                 <q-select filled
-                          v-model="currentBankAccount"
+                          :v-model="currentBankAccount"
                           :options="bankAccounts"
                           label="Bank account" />
                 <div id="balanceTextBox">
@@ -123,11 +192,11 @@
                 <q-table title="Entries"
                          :rows="entries"
                          :columns="entryColumns"
-                         row-key="IdBankAccount" />
+                         row-key="idBankAccount" />
             </div>
         </div>
         <div>
-            <apexchart :options="chartOptions" :series="chartSeries"></apexchart>
+            <!--<apexchart :options="chartOptions" :series="chartSeries"></apexchart>-->
         </div>
     </main>
     <AppFooter/>
