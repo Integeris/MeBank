@@ -1,32 +1,44 @@
 <script setup>
     import { useStorage } from "@vueuse/core"
+    import { useQuasar } from 'quasar';
     import AppFooter from "@/components/AppFooter.vue";
     import HeaderMenu from "@/components/HeaderMenu.vue";
     import VueApexCharts from 'vue-apexcharts'
     import { useRouter } from 'vue-router';
     import { ref, reactive } from 'vue'
 
+    const $q = useQuasar();
     const login = useStorage('login', undefined, sessionStorage);
     const token = useStorage('token', undefined, sessionStorage);
 
-    let bankAccounts;
+    // Список банковских счетов.
+    let bankAccounts = ref([]);
+
+    // Текущий банковский счёт.
     let currentBankAccount;
 
-    GetBankAccounts(login.value, token.value);
+    // Показать диалоговое окно создания счёта.
+    let createAccountShow = ref(false);
 
-    //let bankAccounts = [
-    //    "1231",
-    //    "1231",
-    //    "1231dfs"
-    //];
+    // Список валют.
+    let currencies = ref([]);
 
+    // Выбранная валюта в диалоговом окне.
+    let currentCurrency;
+
+    // Транзакции текущего аккаунта.
+    let entries = ref([]);
+
+    await UpdateData();
+
+    // Колонки транзакций.
     const entryColumns = [
         {
             name: 'IdBankAccount',
             required: true,
             label: 'Bank account',
             align: 'center',
-            field: row => row.IdBankAccount,
+            field: row => row.idBankAccount,
             format: val => `${val}`,
             sortable: true
         },
@@ -35,7 +47,7 @@
             required: true,
             label: 'Amount',
             align: 'center',
-            field: row => row.Amount,
+            field: row => row.amount,
             format: val => `${val}`,
             sortable: true
         },
@@ -44,22 +56,24 @@
             required: true,
             label: 'Date',
             align: 'center',
-            field: row => row.Date,
+            field: row => {
+                const date = new Date(row.date);
+
+                let day = date.getDate();
+                let month = (date.getMonth() < 10) ? '0' + date.getMonth() : date.getMonth();
+                let year = date.getFullYear();
+                let hours = date.getHours();
+                let minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
+                let seconds = date.getSeconds()
+
+                return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes + ':' + seconds;
+            },
             format: val => `${val}`,
             sortable: true
         }
     ];
 
-    let entries = ref([]);
-
-    //let entries = [
-    //    {
-    //        IdBankAccount: 1,
-    //        Balance: 100,
-    //        CurrencyTitle: "RUB"
-    //    }
-    //];
-
+    // Диаграмма.
     const chartSeries = [
         {
             name: "Payment",
@@ -90,18 +104,47 @@
         }
     }
 
-    async function GetBankAccounts(login, token)
+    async function UpdateData() {
+        bankAccounts.value = await GetBankAccounts();
+        currentBankAccount = ref(bankAccounts.value[0]);
+        entries.value = await GetBankAccountEntries(currentBankAccount.value);
+        currencies.value = await GetCurrencies();
+        currentCurrency = ref(currencies.value[0]);
+    }
+
+    async function GetBankAccounts()
     {
         const data = new URLSearchParams(
         {
-            "login": login,
-            "token": token
+            "login": login.value,
+            "token": token.value
         });
 
+        return await ExecuteQuery('api/Client/GetBankAccounts', data, "GET");
+    }
+
+    async function GetBankAccountEntries(bankAccount)
+    {
+        const data = new URLSearchParams(
+        {
+            "login": login.value,
+            "token": token.value,
+            "idBankAccount": bankAccount.idBankAccount
+        });
+
+        return await ExecuteQuery('api/Client/GetBankAccountEntries', data, "GET");
+    }
+
+    async function GetCurrencies() {
+        const data = new URLSearchParams({ });
+        return await ExecuteQuery('api/Client/GetCurrencies', data, "GET");
+    }
+
+    async function ExecuteQuery(api, data, method) {
         try {
-            let response = await fetch('api/Client/GetBankAccounts?' + data.toString(),
+            let response = await fetch(api + "?" + data.toString(),
             {
-                method: 'GET',
+                method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -113,49 +156,53 @@
                 throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
             }
 
-            bankAccounts = ref(result);
-            currentBankAccount = ref(bankAccounts.value[0]);
-
-            await GetGetBankAccountEntries(currentBankAccount.value.idBankAccount, login, token);
-
+            return result;
         } catch (err) {
             console.error(err);
+
+            $q.notify({
+                color: 'red',
+                textColor: 'white',
+                icon: 'warning',
+                message: err.message
+            });
         }
     }
 
-    async function GetGetBankAccountEntries(idBankAccount, login, token)
-    {
+    async function OnChangeSelected(bankAccount) {
+        entries.value = await GetBankAccountEntries(bankAccount);
+    }
+
+    async function OnTransferMoney() {
+
+    }
+
+    async function OnDialogAddBankAccount() {
+        createAccountShow.value = true;
+    }
+
+    async function OnAddBankAccount() {
         const data = new URLSearchParams(
         {
-            "idBankAccount": idBankAccount,
-
-            "login": login,
-            "token": token
+            "idCurrency": currentCurrency.value.idCurrency,
+            "login": login.value,
+            "token": token.value
         });
 
-        try {
-            let response = await fetch('api/Client/GetGetBankAccountEntries?' + data.toString(),
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+        await ExecuteQuery('api/Client/AddBankAccount', data, "POST");
+        await UpdateData();
 
-            let result = await response.json();
+        $q.notify({
+            color: 'green-4',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Account created!'
+        });
 
-            if (!response.ok) {
-                throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
-            }
-
-            entries = ref(result);
-        } catch (err) {
-            console.error(err);
-        }
+        createAccountShow.value = false;
     }
 
-    function onClick()
-    {
+    function OnSignOutClick() {
         login.value = null;
         token.value = null;
     }
@@ -169,7 +216,7 @@
                     Login: {{login}}
                 </div>
             </div>
-            <q-btn @click="onClick()" 
+            <q-btn @click="OnSignOutClick()" 
                    color="primary" 
                    label="Sign out" />
         </div>
@@ -178,26 +225,64 @@
         <div id="accountsContainer">
             <div id="accountData">
                 <q-select filled
-                          :v-model="currentBankAccount"
+                          @update:model-value="OnChangeSelected"
+                          v-model="currentBankAccount"
                           :options="bankAccounts"
+                          option-label="idBankAccount"
                           label="Bank account" />
                 <div id="balanceTextBox">
-                    Balance: 31231
+                    Balance: {{currentBankAccount.balance}} {{currentBankAccount.currencyTitle}}.
                 </div>
-                <div>
-                    Currency: RUB
+                <div id="actionsContainer">
+                    <q-btn class="actionButton"
+                           @click="OnTransferMoney"
+                           color="primary"
+                           label="Transfer money" />
+                    <q-btn class="actionButton"
+                           @click="OnDialogAddBankAccount"
+                           color="primary"
+                           label="Add bank account" />
                 </div>
             </div>
             <div id="entriesContainer">
                 <q-table title="Entries"
                          :rows="entries"
                          :columns="entryColumns"
-                         row-key="idBankAccount" />
+                         row-key="idEntry" />
             </div>
         </div>
         <div>
             <!--<apexchart :options="chartOptions" :series="chartSeries"></apexchart>-->
         </div>
+        <q-dialog v-model="createAccountShow">
+            <q-card>
+                <q-card-section>
+                    <h2>
+                        Change bank account currency
+                    </h2>
+                </q-card-section>
+
+                <q-card-section class="q-pt-none">
+                    <q-select filled
+                              v-model="currentCurrency"
+                              :options="currencies"
+                              option-label="title"
+                              label="Bank account" />
+                </q-card-section>
+
+                <q-card-actions align="right">
+                    <q-btn flat 
+                           label="Back" 
+                           color="primary" 
+                           v-close-popup />
+                    <q-btn @click="OnAddBankAccount"
+                           flat 
+                           label="Create" 
+                           color="primary" 
+                           v-close-popup />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
     </main>
     <AppFooter/>
 </template>
@@ -233,12 +318,24 @@
 
     #balanceTextBox
     {
-        font-size: 45px;
+        font-size: 40px;
+    }
+
+    #actionsContainer
+    {
+        height: 70px;
+        display: flex;
+        gap: 10px;
     }
 
     #entriesContainer {
         margin: 10px 10px 10px 10px;
         display: inline-block;
         width: 50%;
+    }
+
+    .actionButton
+    {
+        width: 100%;
     }
 </style>

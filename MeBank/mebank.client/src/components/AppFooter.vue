@@ -32,7 +32,7 @@
 <style>
     footer {
         padding: 20px 30px;
-        background-color: #C7C7C7;
+        background-color: #F6F6F6;
         color: #333333;
     }
 

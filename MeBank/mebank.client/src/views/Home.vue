@@ -55,6 +55,8 @@
 
 <template>
     <!--<Dashboard/>-->
-    <Dashboard v-if="login != undefined"/>
+    <Suspense>
+        <Dashboard v-if="login != undefined" />
+    </Suspense>
     <Welcome v-if="login == undefined"/>
 </template>

@@ -1,4 +1,5 @@
 ﻿using MeBank.Server.Classes;
+using MeBank.Server.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -127,15 +128,86 @@ namespace MeBank.Server.Controllers
         /// <param name="token">Токен.</param>
         /// <returns>Транзакции банковского счёта.</returns>
         [HttpGet]
-        [Route($"{nameof(GetGetBankAccountEntries)}")]
+        [Route($"{nameof(GetBankAccountEntries)}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetGetBankAccountEntries(int idBankAccount, string login, string token)
+        public IActionResult GetBankAccountEntries(int idBankAccount, string login, string token)
         {
             try
             {
                 AssertValidateToken(login, token);
                 return Ok(Core.Context.GetGetBankAccountEntries(idBankAccount));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
+        /// Получение валют банковских счетов.
+        /// </summary>
+        /// <returns>Валюты банковских счетов.</returns>
+        [HttpGet]
+        [Route($"{nameof(GetCurrencies)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetCurrencies()
+        {
+            try
+            {
+                return Ok(Core.Context.GetCurrencies());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
+        /// Добавление банковского счёта клиенту.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="token">Токен.</param>
+        /// <param name="idCurrency">Идентификатр валюты.</param>
+        /// <returns>Идентификатор нового банковского счёта.</returns>
+        [HttpPost]
+        [Route($"{nameof(AddBankAccount)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult AddBankAccount(string login, string token, int idCurrency)
+        {
+            try
+            {
+                AssertValidateToken(login, token);
+                return Ok(Core.Context.AddBankAccount(login, idCurrency));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
+        /// Перевод денежных средств.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="idCreditBankAcount">Счёт получателя.</param>
+        /// <param name="idDebitBankAcount">Счёт отправителя.</param>
+        /// <param name="amount">Сумма.</param>
+        /// <returns>Удалось ли отправить деньги.</returns>
+        [HttpPost]
+        [Route($"{nameof(MoneyTransfer)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult MoneyTransfer(string login, string token, int idCreditBankAcount, int idDebitBankAcount, decimal amount)
+        {
+            try
+            {
+                AssertValidateToken(login, token);
+                Core.Context.MoneyTransfer(login, idCreditBankAcount, idDebitBankAcount, amount);
+
+                return Ok();
             }
             catch (Exception ex)
             {

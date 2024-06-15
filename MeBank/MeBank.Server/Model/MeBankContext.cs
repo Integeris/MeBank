@@ -265,7 +265,7 @@ namespace MeBank.Server.Model
 
                         using (NpgsqlDataReader reader = command.ExecuteReader())
                         {
-                            PropertyInfo[] properties = typeof(BankAccount).GetProperties();
+                            PropertyInfo[] properties = typeof(Entry).GetProperties();
 
                             while (reader.Read())
                             {
@@ -292,6 +292,160 @@ namespace MeBank.Server.Model
             }
 
             return entries;
+        }
+
+        /// <summary>
+        /// Получение валют банковских счетов.
+        /// </summary>
+        /// <returns>Валюты банковских счетов.</returns>
+        /// <exception cref="Exception"></exception>
+        public IEnumerable<Currency> GetCurrencies()
+        {
+            List<Currency> currencies = new List<Currency>();
+
+            const string sqlText = "SELECT * FROM \"GetCurrencies\" ()";
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlText, connection))
+                {
+                    try
+                    {
+                        using (NpgsqlDataReader reader = command.ExecuteReader())
+                        {
+                            PropertyInfo[] properties = typeof(Currency).GetProperties();
+
+                            while (reader.Read())
+                            {
+                                Currency currency = new Currency();
+
+                                foreach (PropertyInfo propertyInfo in properties)
+                                {
+                                    propertyInfo.SetValue(currency, Convert.ChangeType(reader.GetValue(propertyInfo.Name), propertyInfo.PropertyType));
+                                }
+
+                                currencies.Add(currency);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка при получении валют банковских счетов. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
+                    }
+                }
+            }
+
+            return currencies;
+        }
+
+        /// <summary>
+        /// Добавление банковского счёта клиенту
+        /// </summary>
+        /// <param name="login"></param>
+        /// <param name="idCurrency"></param>
+        /// <param name="balance"></param>
+        /// <returns>Идентификатор банковского счёта клиента.</returns>
+        /// <exception cref="Exception"></exception>
+        public int AddBankAccount(string login, int idCurrency, decimal balance = 0)
+        {
+            int idBankAccount;
+
+            const string sqlText = "SELECT * FROM \"CreateBankAccount\" (@login, @balance, @idCurrency)";
+
+            NpgsqlParameter[] parameters =
+            {
+                new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
+                {
+                    Value = login
+                },
+                new NpgsqlParameter("@balance", DbType.VarNumeric)
+                {
+                    Value = balance
+                },
+                new NpgsqlParameter("@idCurrency", DbType.Int32)
+                {
+                    Value = idCurrency
+                }
+            };
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlText, connection))
+                {
+                    try
+                    {
+                        command.Parameters.AddRange(parameters);
+                        idBankAccount = (int)command.ExecuteScalar();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка добавлении счёта клиенту. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
+                    }
+                }
+            }
+
+            return idBankAccount;
+        }
+
+        /// <summary>
+        /// Перевод денежных средств.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="idCreditBankAcount">Счёт получателя.</param>
+        /// <param name="idDebitBankAcount">Счёт отправителя.</param>
+        /// <param name="amount">Сумма.</param>
+        /// <exception cref="Exception"></exception>
+        public void MoneyTransfer(string login, int idCreditBankAcount, int idDebitBankAcount, decimal amount)
+        {
+            const string sqlText = "CALL \"MoneyTransfer\" (@login, @idCreditBankAcount, @idDebitBankAcount, @amount)";
+
+            NpgsqlParameter[] parameters =
+            {
+                new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
+                {
+                    Value = login
+                },
+                new NpgsqlParameter("@idCreditBankAcount", DbType.Int32)
+                {
+                    Value = idCreditBankAcount
+                },
+                new NpgsqlParameter("@idDebitBankAcount", DbType.Int32)
+                {
+                    Value = idDebitBankAcount
+                },
+                new NpgsqlParameter("@amount", DbType.VarNumeric)
+                {
+                    Value = amount
+                }
+            };
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.Serializable))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlText, connection))
+                {
+                    try
+                    {
+                        command.Parameters.AddRange(parameters);
+                        command.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка добавлении счёта клиенту. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
+                    }
+                }
+            }
         }
 
         /// <summary>
