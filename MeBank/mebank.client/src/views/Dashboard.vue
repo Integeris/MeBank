@@ -11,6 +11,22 @@
     const login = useStorage('login', undefined, sessionStorage);
     const token = useStorage('token', undefined, sessionStorage);
 
+    const chartOptions = {
+        chart: {
+            type: "line",
+            stacked: true
+        },
+        stroke: {
+            curve: 'smooth',
+        },
+        dataLabels: {
+            enable: false
+        },
+        xaxis: {
+            type: 'datetime'
+        }
+    };
+
     // Список банковских счетов.
     let bankAccounts = ref([]);
 
@@ -40,8 +56,6 @@
 
     // Транзакции текущего аккаунта.
     let entries = ref([]);
-
-    await UpdateData();
 
     // Колонки транзакций.
     const entryColumns = [
@@ -86,35 +100,9 @@
     ];
 
     // Диаграмма.
-    const chartSeries = [
-        {
-            name: "Payment",
-            data: [{ x: '05/06/2014', y: 54 }, { x: '05/08/2014', y: 17 }, { x: '05/28/2014', y: 26 }]
-        },
-        {
-            name: "GetPayment",
-            data: [{ x: '05/06/2014', y: 20 }, { x: '05/08/2014', y: 40 }, { x: '05/28/2014', y: 26 }]
-        }
-    ]
+    let chartSeries = ref([]);
 
-    const chartOptions = {
-        chart: {
-            type: "bar",
-            stacked: true
-        },
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                endingShape: "rounded"
-            }
-        },
-        dataLabels: {
-            enable: false
-        },
-        xaxis: {
-            type: 'datetime'
-        }
-    }
+    await UpdateData();
 
     async function UpdateData() {
         bankAccounts.value = await GetBankAccounts();
@@ -122,6 +110,29 @@
         entries.value = await GetBankAccountEntries(currentBankAccount.value);
         currencies.value = await GetCurrencies();
         selectedCurrency = ref(currencies.value[0]);
+
+        chartSeries.value = [];
+
+        for (var i = 0; i < bankAccounts.value.length; i++) {
+            let entries = await GetBankAccountEntries(bankAccounts.value[i]);
+            let data = [];
+
+            for (var j = 0; j < entries.length; j++) {
+                data.push(
+                    {
+                        x: new Date(entries[j].date),
+                        y: entries[j].amount
+                    }
+                );
+            }
+
+            chartSeries.value.push(
+                {
+                    name: bankAccounts.value[i].idBankAccount,
+                    data: data
+                }
+            );
+        }
     }
 
     async function GetBankAccounts()
@@ -305,7 +316,14 @@
             </div>
         </div>
         <div id="chartContainer">
-            <apexchart height="500px"
+            <h3>
+                Cash flow
+            </h3>
+            <div>
+                <!--Элементы фильтрации.-->
+                <q-select v-model="model" :options="options" label="Standard" />
+            </div>
+            <apexchart height="300px"
                        :options="chartOptions"
                        :series="chartSeries" />
         </div>
@@ -450,6 +468,11 @@
         margin: 10px 10px 10px 10px;
         display: inline-block;
         width: 50%;
+    }
+
+    #chartContainer
+    {
+        margin: 10px;
     }
 
     .actionButton

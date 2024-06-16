@@ -54,7 +54,6 @@
 </script>
 
 <template>
-    <!--<Dashboard/>-->
     <Suspense>
         <Dashboard v-if="login != undefined" />
     </Suspense>
