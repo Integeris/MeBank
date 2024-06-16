@@ -23,6 +23,9 @@
     // Паказать диалоговое окно перевода денег.
     let transferMoneyShow = ref(false);
 
+    // Показать диалоговое окно конвертации валюты.
+    let convertCurrencyShow = ref(false);
+
     // Список валют.
     let currencies = ref([]);
 
@@ -211,6 +214,25 @@
         selectedBankAccount.value = "";
     }
 
+    async function OnDialogConvertCurrency() {
+        convertCurrencyShow.value = true;
+    }
+
+    async function OnConvertCurrency() {
+
+        const data = new URLSearchParams(
+            {
+                "login": login.value,
+                "token": token.value,
+                "idBankAccount": currentBankAccount.value.idBankAccount,
+                "idCurrency": selectedCurrency.value.idCurrency
+            });
+
+        await ExecuteQuery('api/Client/BankAccountConversion', data, "POST", "Successful currency conversion.");
+        await UpdateData();
+        convertCurrencyShow.value = false;
+    }
+
     async function OnDialogAddBankAccount() {
         createAccountShow.value = true;
     }
@@ -266,6 +288,10 @@
                            color="primary"
                            label="Transfer money" />
                     <q-btn class="actionButton"
+                           @click="OnDialogConvertCurrency"
+                           color="primary"
+                           label="Convert currency" />
+                    <q-btn class="actionButton"
                            @click="OnDialogAddBankAccount"
                            color="primary"
                            label="Add bank account" />
@@ -278,8 +304,10 @@
                          row-key="idEntry" />
             </div>
         </div>
-        <div>
-            <!--<apexchart :options="chartOptions" :series="chartSeries"></apexchart>-->
+        <div id="chartContainer">
+            <apexchart height="500px"
+                       :options="chartOptions"
+                       :series="chartSeries" />
         </div>
         <q-dialog v-model="createAccountShow">
             <q-card>
@@ -294,7 +322,7 @@
                               v-model="selectedCurrency"
                               :options="currencies"
                               option-label="title"
-                              label="Bank account" />
+                              label="Currency" />
                 </q-card-section>
 
                 <q-card-actions align="right">
@@ -305,6 +333,35 @@
                     <q-btn @click="OnAddBankAccount"
                            flat
                            label="Create"
+                           color="primary"
+                           v-close-popup />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+        <q-dialog v-model="convertCurrencyShow">
+            <q-card>
+                <q-card-section>
+                    <h2>
+                        Select bank account currency
+                    </h2>
+                </q-card-section>
+
+                <q-card-section class="q-pt-none">
+                    <q-select filled
+                              v-model="selectedCurrency"
+                              :options="currencies"
+                              option-label="title"
+                              label="Currency" />
+                </q-card-section>
+
+                <q-card-actions align="right">
+                    <q-btn flat
+                           label="Back"
+                           color="primary"
+                           v-close-popup />
+                    <q-btn @click="OnConvertCurrency"
+                           flat
+                           label="Convert"
                            color="primary"
                            v-close-popup />
                 </q-card-actions>

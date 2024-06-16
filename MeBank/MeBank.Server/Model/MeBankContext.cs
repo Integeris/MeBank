@@ -396,6 +396,54 @@ namespace MeBank.Server.Model
         }
 
         /// <summary>
+        /// Изменение валюты счёта клиента.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="idBankAccount">Идентификатор банковского счёта.</param>
+        /// <param name="idCurrency">Идентификатор валюты.</param>
+        /// <exception cref="Exception"></exception>
+        public void BankAccountConversion(string login, int idBankAccount, int idCurrency)
+        {
+            const string sqlText = "CALL \"BankAccountConversion\" (@login, @idBankAccount, @idCurrency)";
+
+            NpgsqlParameter[] parameters =
+            {
+                new NpgsqlParameter("@login", DbType.StringFixedLength, 50)
+                {
+                    Value = login
+                },
+                new NpgsqlParameter("@idBankAccount", DbType.Int32)
+                {
+                    Value = idBankAccount
+                },
+                new NpgsqlParameter("@idCurrency", DbType.Int32)
+                {
+                    Value = idCurrency
+                }
+            };
+
+            using (IDbContextTransaction transaction = Database.BeginTransaction(IsolationLevel.Serializable))
+            {
+                using (NpgsqlCommand command = new NpgsqlCommand(sqlText, connection))
+                {
+                    try
+                    {
+                        command.Parameters.AddRange(parameters);
+                        command.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка изменения валюты счёта клиента. Запрос: {command.CommandText}.", ex);
+                    }
+                    finally
+                    {
+                        transaction.Commit();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Перевод денежных средств.
         /// </summary>
         /// <param name="login">Логин.</param>

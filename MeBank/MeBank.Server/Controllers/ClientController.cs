@@ -189,6 +189,33 @@ namespace MeBank.Server.Controllers
         }
 
         /// <summary>
+        /// Изменение валюты счёта клиента.
+        /// </summary>
+        /// <param name="login">Логин.</param>
+        /// <param name="token">Токен.</param>
+        /// <param name="idBankAccount">Идентификатор банковского счёта.</param>
+        /// <param name="idCurrency">Идентификатор валюты.</param>
+        /// <returns>Результат конвертации банковского счёта.</returns>
+        [HttpPost]
+        [Route($"{nameof(BankAccountConversion)}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult BankAccountConversion(string login, string token, int idBankAccount, int idCurrency)
+        {
+            try
+            {
+                AssertValidateToken(login, token);
+                Core.Context.BankAccountConversion(login, idBankAccount, idCurrency);
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ExceptionLevelDesigner.GetFullException(ex));
+            }
+        }
+
+        /// <summary>
         /// Перевод денежных средств.
         /// </summary>
         /// <param name="login">Логин.</param>
