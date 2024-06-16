@@ -405,7 +405,7 @@ namespace MeBank.Server.Model
         /// <exception cref="Exception"></exception>
         public void MoneyTransfer(string login, int idCreditBankAcount, int idDebitBankAcount, decimal amount)
         {
-            const string sqlText = "CALL \"MoneyTransfer\" (@login, @idCreditBankAcount, @idDebitBankAcount, @amount)";
+            const string sqlText = "CALL \"MoneyTransfer\" (@login, @idDebitBankAcount, @idCreditBankAcount, @amount)";
 
             NpgsqlParameter[] parameters =
             {

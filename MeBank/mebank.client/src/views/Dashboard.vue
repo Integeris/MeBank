@@ -20,11 +20,20 @@
     // Показать диалоговое окно создания счёта.
     let createAccountShow = ref(false);
 
+    // Паказать диалоговое окно перевода денег.
+    let transferMoneyShow = ref(false);
+
     // Список валют.
     let currencies = ref([]);
 
     // Выбранная валюта в диалоговом окне.
-    let currentCurrency;
+    let selectedCurrency;
+
+    // Выбранный банковский счёт в диалоговом окне.
+    let selectedBankAccount = ref(null);
+
+    // Сумма для перевода денег.
+    let amountTransfer = ref(null);
 
     // Транзакции текущего аккаунта.
     let entries = ref([]);
@@ -109,7 +118,7 @@
         currentBankAccount = ref(bankAccounts.value[0]);
         entries.value = await GetBankAccountEntries(currentBankAccount.value);
         currencies.value = await GetCurrencies();
-        currentCurrency = ref(currencies.value[0]);
+        selectedCurrency = ref(currencies.value[0]);
     }
 
     async function GetBankAccounts()
@@ -140,7 +149,7 @@
         return await ExecuteQuery('api/Client/GetCurrencies', data, "GET");
     }
 
-    async function ExecuteQuery(api, data, method) {
+    async function ExecuteQuery(api, data, method, successText = null) {
         try {
             let response = await fetch(api + "?" + data.toString(),
             {
@@ -154,6 +163,15 @@
 
             if (!response.ok) {
                 throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
+            }
+
+            if (successText != null) {
+                $q.notify({
+                    color: 'green-4',
+                    textColor: 'white',
+                    icon: 'cloud_done',
+                    message: successText
+                });
             }
 
             return result;
@@ -173,8 +191,24 @@
         entries.value = await GetBankAccountEntries(bankAccount);
     }
 
-    async function OnTransferMoney() {
+    async function OnDialogTransferMoney() {
+        transferMoneyShow.value = true;
+    }
 
+    async function OnTransferMoney() {
+        const data = new URLSearchParams(
+            {
+                "login": login.value,
+                "token": token.value,
+                "idDebitBankAcount": currentBankAccount.value.idBankAccount,
+                "idCreditBankAcount": selectedBankAccount.value,
+                "amount": amountTransfer.value
+            });
+
+        await ExecuteQuery('api/Client/MoneyTransfer', data, "POST", "The funds have been transferred.");
+        await UpdateData();
+
+        selectedBankAccount.value = "";
     }
 
     async function OnDialogAddBankAccount() {
@@ -184,20 +218,13 @@
     async function OnAddBankAccount() {
         const data = new URLSearchParams(
         {
-            "idCurrency": currentCurrency.value.idCurrency,
+            "idCurrency": selectedCurrency.value.idCurrency,
             "login": login.value,
             "token": token.value
         });
 
-        await ExecuteQuery('api/Client/AddBankAccount', data, "POST");
+        await ExecuteQuery('api/Client/AddBankAccount', data, "POST", "Account created!");
         await UpdateData();
-
-        $q.notify({
-            color: 'green-4',
-            textColor: 'white',
-            icon: 'cloud_done',
-            message: 'Account created!'
-        });
 
         createAccountShow.value = false;
     }
@@ -235,7 +262,7 @@
                 </div>
                 <div id="actionsContainer">
                     <q-btn class="actionButton"
-                           @click="OnTransferMoney"
+                           @click="OnDialogTransferMoney"
                            color="primary"
                            label="Transfer money" />
                     <q-btn class="actionButton"
@@ -258,27 +285,61 @@
             <q-card>
                 <q-card-section>
                     <h2>
-                        Change bank account currency
+                        Select bank account currency
                     </h2>
                 </q-card-section>
 
                 <q-card-section class="q-pt-none">
                     <q-select filled
-                              v-model="currentCurrency"
+                              v-model="selectedCurrency"
                               :options="currencies"
                               option-label="title"
                               label="Bank account" />
                 </q-card-section>
 
                 <q-card-actions align="right">
-                    <q-btn flat 
-                           label="Back" 
-                           color="primary" 
+                    <q-btn flat
+                           label="Back"
+                           color="primary"
                            v-close-popup />
                     <q-btn @click="OnAddBankAccount"
-                           flat 
-                           label="Create" 
-                           color="primary" 
+                           flat
+                           label="Create"
+                           color="primary"
+                           v-close-popup />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+        <q-dialog v-model="transferMoneyShow">
+            <q-card>
+                <q-card-section>
+                    <h2>
+                        Transfer money
+                    </h2>
+                </q-card-section>
+
+                <q-card-section class="q-pt-none">
+                    Bank account:
+                    <q-input v-model="selectedBankAccount"
+                             filled
+                             label="Bank account"
+                             :rules="[val => !Number.isNaN(Number(val)) || 'Only a numeric number can be entered.', val => Number(val) != currentBankAccount.idBankAccount || 'You can not transfer money to the same account.']" />
+                    Amount:
+                    <q-input v-model="amountTransfer"
+                             filled
+                             label="Bank account"
+                             :rules="[val => !Number.isNaN(Number(val)) || 'Only a numeric number can be entered.', val => Number(val) > 0 || 'The transfer amount must be greater than zero.']" />
+                </q-card-section>
+
+                <q-card-actions align="right">
+                    <q-btn flat
+                           label="Back"
+                           color="primary"
+                           v-close-popup />
+                    <q-btn @click="OnTransferMoney"
+                           flat
+                           label="Transfer"
+                           color="primary"
                            v-close-popup />
                 </q-card-actions>
             </q-card>

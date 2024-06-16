@@ -207,7 +207,7 @@ namespace MeBank.Server.Controllers
                 AssertValidateToken(login, token);
                 Core.Context.MoneyTransfer(login, idCreditBankAcount, idDebitBankAcount, amount);
 
-                return Ok();
+                return Ok(true);
             }
             catch (Exception ex)
             {
