@@ -319,9 +319,12 @@
             <h3>
                 Cash flow
             </h3>
-            <div>
+            <div id="filtersContainer">
                 <!--Ёлементы фильтрации.-->
-                <q-select v-model="model" :options="options" label="Standard" />
+                <q-input v-model="date" filled type="date" hint="From date" />
+                <q-input v-model="date" filled type="date" hint="To date" />
+                <q-select v-model="model" :options="currencies" label="Currency" />
+                <q-select v-model="model" :options="bankAccounts" label="Bank accounts" />
             </div>
             <apexchart height="300px"
                        :options="chartOptions"
@@ -470,8 +473,13 @@
         width: 50%;
     }
 
-    #chartContainer
+    #filtersContainer
     {
+        display: flex;
+        gap: 20px;
+    }
+
+    #chartContainer {
         margin: 10px;
     }
 
