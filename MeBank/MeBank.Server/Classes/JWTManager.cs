@@ -48,6 +48,16 @@ namespace MeBank.Server.Classes
         private static readonly string secretKey = "MeBankSecretKey12345678901234567890";
 
         /// <summary>
+        /// Алгоритм шифрования.
+        /// </summary>
+        private static readonly string securityAlgorithm = SecurityAlgorithms.HmacSha256;
+
+        /// <summary>
+        /// Количество минут до окончания действия токена.
+        /// </summary>
+        private static readonly int expiresMinuteCount = 1;
+
+        /// <summary>
         /// Симетричный ключ.
         /// </summary>
         private static readonly SymmetricSecurityKey issuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -120,6 +130,22 @@ namespace MeBank.Server.Classes
         }
 
         /// <summary>
+        /// Алгоритм шифрования.
+        /// </summary>
+        public static string SecurityAlgorithm
+        {
+            get => securityAlgorithm;
+        }
+
+        /// <summary>
+        /// Количество минут до окончания действия токена.
+        /// </summary>
+        public static int ExpiresMinuteCount
+        {
+            get => expiresMinuteCount;
+        }
+
+        /// <summary>
         /// Симетричный ключ.
         /// </summary>
         public static SymmetricSecurityKey IssuerSigningKey
@@ -152,8 +178,8 @@ namespace MeBank.Server.Classes
                 validIssuer,
                 validAudience, 
                 claims,
-                expires: DateTime.UtcNow.AddMinutes(1),
-                signingCredentials: new SigningCredentials(issuerSigningKey, SecurityAlgorithms.HmacSha256)
+                expires: DateTime.UtcNow.AddMinutes(expiresMinuteCount),
+                signingCredentials: new SigningCredentials(issuerSigningKey, securityAlgorithm)
             );
         }
 
@@ -165,31 +191,6 @@ namespace MeBank.Server.Classes
         public static string GetTokenString(JwtSecurityToken token)
         {
             return tokenHandler.WriteToken(token);
-        }
-
-        /// <summary>
-        /// Проверяет токен на правильность.
-        /// </summary>
-        /// <param name="login">Логин пользователя.</param>
-        /// <param name="token">Токен.</param>
-        public static void AssertValidateToken(string login, string token)
-        {
-            try
-            {
-                SecurityToken securityToken;
-                ClaimsPrincipal claims = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
-
-                string tokenLogin = claims.FindFirst(ClaimTypes.Name).Value;
-
-                if (login != tokenLogin)
-                {
-                    throw new ArgumentException("Логин в переданном токене и переданный логин не совпадают", nameof(login));
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Неверный токен.", nameof(token), ex);
-            }
         }
     }
 }

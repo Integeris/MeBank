@@ -8,6 +8,7 @@
     import { ref, reactive } from 'vue'
 
     const $q = useQuasar();
+    const $router = useRouter();
     const login = useStorage('login', undefined, sessionStorage);
     const token = useStorage('token', undefined, sessionStorage);
 
@@ -160,29 +161,23 @@
 
     async function GetBankAccounts()
     {
-        const data = new URLSearchParams(
-        {
-            "login": login.value,
-            "token": token.value
-        });
-
+        const data = new URLSearchParams();
         return await ExecuteQuery('api/Client/GetBankAccounts', data, "GET");
     }
 
     async function GetBankAccountEntries(bankAccount)
     {
         const data = new URLSearchParams(
-        {
-            "login": login.value,
-            "token": token.value,
-            "idBankAccount": bankAccount.idBankAccount
-        });
+            {
+                "idBankAccount": bankAccount.idBankAccount
+            }
+        );
 
         return await ExecuteQuery('api/Client/GetBankAccountEntries', data, "GET");
     }
 
     async function GetCurrencies() {
-        const data = new URLSearchParams({ });
+        const data = new URLSearchParams();
         return await ExecuteQuery('api/Client/GetCurrencies', data, "GET");
     }
 
@@ -192,13 +187,18 @@
             {
                 method: method,
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": 'application/json',
+                    "Authorization": token.value
                 }
             });
 
             let result = await response.json();
 
             if (!response.ok) {
+                if (response.status == 401) {
+                    OnSignOutClick();
+                }
+
                 throw new Error(`Code: ${response.status} - ${response.statusText}.\nText: ${result}`);
             }
 
@@ -235,17 +235,16 @@
     async function OnTransferMoney() {
         const data = new URLSearchParams(
             {
-                "login": login.value,
-                "token": token.value,
                 "idDebitBankAcount": currentBankAccount.value.idBankAccount,
                 "idCreditBankAcount": selectedBankAccount.value,
                 "amount": amountTransfer.value
-            });
+            }
+        );
 
         await ExecuteQuery('api/Client/MoneyTransfer', data, "POST", "The funds have been transferred.");
         await UpdateData();
 
-        selectedBankAccount.value = "";
+        selectedBankAccount.value = null;
     }
 
     async function OnDialogConvertCurrency() {
@@ -256,11 +255,10 @@
 
         const data = new URLSearchParams(
             {
-                "login": login.value,
-                "token": token.value,
                 "idBankAccount": currentBankAccount.value.idBankAccount,
                 "idCurrency": selectedCurrency.value.idCurrency
-            });
+            }
+        );
 
         await ExecuteQuery('api/Client/BankAccountConversion', data, "POST", "Successful currency conversion.");
         await UpdateData();
@@ -273,11 +271,10 @@
 
     async function OnAddBankAccount() {
         const data = new URLSearchParams(
-        {
-            "idCurrency": selectedCurrency.value.idCurrency,
-            "login": login.value,
-            "token": token.value
-        });
+            {
+                "idCurrency": selectedCurrency.value.idCurrency
+            }
+        );
 
         await ExecuteQuery('api/Client/AddBankAccount', data, "POST", "Account created!");
         await UpdateData();
