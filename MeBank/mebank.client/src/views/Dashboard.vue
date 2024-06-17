@@ -99,6 +99,12 @@
         }
     ];
 
+    // ‘ильтры.
+    let fromDate = ref(null);
+    let toDate = ref(null);
+    let filterCurrency = ref([]);
+    let filterBankAccount = ref([]);
+
     // ƒиаграмма.
     let chartSeries = ref([]);
 
@@ -111,16 +117,33 @@
         currencies.value = await GetCurrencies();
         selectedCurrency = ref(currencies.value[0]);
 
+        await UpdateChart();
+    }
+
+    async function UpdateChart() {
         chartSeries.value = [];
 
-        for (var i = 0; i < bankAccounts.value.length; i++) {
-            let entries = await GetBankAccountEntries(bankAccounts.value[i]);
+        let currenciesTitles = filterCurrency.value.map(value => value.title);
+        let filterBankAccounts = bankAccounts.value.filter(value => (filterBankAccount.value.length == 0 || filterBankAccount.value.indexOf(value) != -1) &&
+            (currenciesTitles.length == 0 || currenciesTitles.indexOf(value.currencyTitle) != -1));
+
+        for (var i = 0; i < filterBankAccounts.length; i++) {
+            let entries = await GetBankAccountEntries(filterBankAccounts[i]);
             let data = [];
 
             for (var j = 0; j < entries.length; j++) {
+                let date = new Date(entries[j].date);
+                let idCurrency = entries[j].idCurrency;
+                let idBankAccount = entries[j].idBankAccount;
+
+                if (fromDate.value != null && new Date(fromDate.value) > date ||
+                    toDate.value != null && new Date(toDate.value) < date) {
+                    continue;
+                }
+
                 data.push(
                     {
-                        x: new Date(entries[j].date),
+                        x: date,
                         y: entries[j].amount
                     }
                 );
@@ -321,10 +344,37 @@
             </h3>
             <div id="filtersContainer">
                 <!--Ёлементы фильтрации.-->
-                <q-input v-model="date" filled type="date" hint="From date" />
-                <q-input v-model="date" filled type="date" hint="To date" />
-                <q-select v-model="model" :options="currencies" label="Currency" />
-                <q-select v-model="model" :options="bankAccounts" label="Bank accounts" />
+                <div>
+                    From date:
+                    <q-input v-model="fromDate"
+                             filled
+                             clearable
+                             type="date"
+                             @update:model-value="UpdateChart" />
+                </div>
+                <div>
+                    To date:
+                    <q-input v-model="toDate"
+                             clearable
+                             filled type="date"
+                             @update:model-value="UpdateChart" />
+                </div>
+                <div>
+                    Currencies:
+                    <q-select v-model="filterCurrency"
+                              multiple
+                              :options="currencies"
+                              option-label="title"
+                              @update:model-value="UpdateChart" />
+                </div>
+                <div>
+                    Bank accounts:
+                    <q-select v-model="filterBankAccount"
+                              multiple
+                              :options="bankAccounts"
+                              option-label="idBankAccount"
+                              @update:model-value="UpdateChart" />
+                </div>
             </div>
             <apexchart height="300px"
                        :options="chartOptions"
@@ -477,6 +527,10 @@
     {
         display: flex;
         gap: 20px;
+    }
+
+    #filtersContainer div {
+        width: 200px;
     }
 
     #chartContainer {
