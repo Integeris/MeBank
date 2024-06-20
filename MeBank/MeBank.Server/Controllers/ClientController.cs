@@ -21,9 +21,17 @@ namespace MeBank.Server.Controllers
     public class ClientController : ControllerBase
     {
         /// <summary>
+        /// Контекст базы данных.
+        /// </summary>
+        private MeBankContext databaseContext;
+
+        /// <summary>
         /// Создание контроллера для действий клиента.
         /// </summary>
-        public ClientController() { }
+        public ClientController(MeBankContext databaseContext)
+        {
+            this.databaseContext = databaseContext;
+        }
 
         /// <summary>
         /// Регистрация новоги клиета.
@@ -39,7 +47,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                Core.Context.RegistrationClient(login, password);
+                databaseContext.RegistrationClient(login, password);
             }
             catch (Exception ex)
             {
@@ -63,7 +71,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                if (!Core.Context.ExistUser(login, password))
+                if (!databaseContext.ExistUser(login, password))
                 {
                     throw new Exception("Клиента не существует. Пройдите авторизацию.");
                 }
@@ -103,7 +111,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                return Ok(Core.Context.GetBankAccounts(User.Identity.Name));
+                return Ok(databaseContext.GetBankAccounts(User.Identity.Name));
             }
             catch (Exception ex)
             {
@@ -125,7 +133,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                return Ok(Core.Context.GetGetBankAccountEntries(idBankAccount));
+                return Ok(databaseContext.GetGetBankAccountEntries(idBankAccount));
             }
             catch (Exception ex)
             {
@@ -145,7 +153,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                return Ok(Core.Context.GetCurrencies());
+                return Ok(databaseContext.GetCurrencies());
             }
             catch (Exception ex)
             {
@@ -167,7 +175,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                return Ok(Core.Context.AddBankAccount(User.Identity.Name, idCurrency));
+                return Ok(databaseContext.AddBankAccount(User.Identity.Name, idCurrency));
             }
             catch (Exception ex)
             {
@@ -190,7 +198,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                Core.Context.BankAccountConversion(User.Identity.Name, idBankAccount, idCurrency);
+                databaseContext.BankAccountConversion(User.Identity.Name, idBankAccount, idCurrency);
 
                 return Ok(true);
             }
@@ -216,7 +224,7 @@ namespace MeBank.Server.Controllers
         {
             try
             {
-                Core.Context.MoneyTransfer(User.Identity.Name, idCreditBankAcount, idDebitBankAcount, amount);
+                databaseContext.MoneyTransfer(User.Identity.Name, idCreditBankAcount, idDebitBankAcount, amount);
 
                 return Ok(true);
             }
