@@ -23,7 +23,7 @@ namespace MeBank.Server.Controllers
         /// <summary>
         /// Контекст базы данных.
         /// </summary>
-        private MeBankContext databaseContext;
+        private readonly MeBankContext databaseContext;
 
         /// <summary>
         /// Создание контроллера для действий клиента.
